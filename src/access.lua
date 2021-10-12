@@ -27,7 +27,7 @@ local function getUserInfo(access_token, callback_url, conf)
      return redirect_to_auth(conf, callback_url)
   end
 
-  ngx.log(ngx.ERR, "USER INFO JSON: " ,res.body)
+  -- ngx.log(ngx.ERR, "USER INFO JSON: " ,res.body)
 
   local userJson = cjson.decode(res.body)
   return userJson
@@ -39,7 +39,7 @@ local function getKongKey(eoauth_token, access_token, callback_url, conf)
   local userInfo, err = singletons.cache:get(eoauth_token, { ttl = 28800 }, getUserInfo, access_token, callback_url, conf)
 	
   if err then
-    ngx.log(ngx.ERR, "Could not retrieve UserInfo: ", err)
+    -- ngx.log(ngx.ERR, "Could not retrieve UserInfo: ", err)
     return
   end
 	
@@ -108,7 +108,7 @@ function  handle_callback( conf, callback_url )
     redirect_url = args.redirect_url
   end
 
-  ngx.log(ngx.ERR, "Handle Callback Redirect URL", redirect_url)
+  -- ngx.log(ngx.ERR, "Handle Callback Redirect URL", redirect_url)
   -- kong.log.error("Handle Callback Redirect URL", redirect_url)
 
   if code then
@@ -129,7 +129,7 @@ function  handle_callback( conf, callback_url )
 
     local json = cjson.decode(res.body)
     local access_token = json.access_token
-    ngx.log(ngx.ERR, "Access Token: " ,access_token)
+    -- ngx.log(ngx.ERR, "Access Token: " ,access_token)
     if not access_token then
       oidc_error = {status = ngx.HTTP_BAD_REQUEST, message = json.error_description}
       return kong.response.exit(oidc_error.status, { message = oidc_error.message })
@@ -151,7 +151,7 @@ function  handle_callback( conf, callback_url )
     local redirect_back = ngx.var.cookie_EOAuthRedirectBack
 
 
-    ngx.log(ngx.ERR, "Cookie EOAuth Redirect Back: " ,redirect_back)
+    -- ngx.log(ngx.ERR, "Cookie EOAuth Redirect Back: " ,redirect_back)
 
     if redirect_back then
       return ngx.redirect(redirect_back) --Should always land here if no custom Loggedin page defined!
@@ -178,30 +178,30 @@ function _M.run(conf)
 	   path_prefix = ngx.var.request_uri
 	end
 
-  ngx.log(ngx.ERR, "00000 Main Path Prefix: ", path_prefix)
+  -- ngx.log(ngx.ERR, "00000 Main Path Prefix: ", path_prefix)
   -- kong.log.error("Main Path Prefix: ", path_prefix)
 
 	if pl_stringx.endswith(path_prefix, "/") then
-    ngx.log(ngx.ERR, "00000 - 1111 First Branch ")
+    -- ngx.log(ngx.ERR, "00000 - 1111 First Branch ")
 	  path_prefix = path_prefix:sub(1, path_prefix:len() - 1)
 	  callback_url = ngx.var.scheme .. "://" .. ngx.var.host .. path_prefix .. "/oauth2/callback"
 	elseif pl_stringx.endswith(path_prefix, "/oauth2/callback") then --We are in the callback of our proxy
-    ngx.log(ngx.ERR, "00000 - 2222 Second Branch ")
+    -- ngx.log(ngx.ERR, "00000 - 2222 Second Branch ")
 	  callback_url = ngx.var.scheme .. "://" .. ngx.var.host .. path_prefix
 	  handle_callback(conf, callback_url)
 	else
-    ngx.log(ngx.ERR, "00000 - 33333 Third Branch ")
+    -- ngx.log(ngx.ERR, "00000 - 33333 Third Branch ")
 	  callback_url = ngx.var.scheme .. "://" .. ngx.var.host .. path_prefix .. "/oauth2/callback"
 	end
 
 	local encrypted_token = ngx.var.cookie_EOAuthToken
 
-  ngx.log(ngx.ERR, "00000 Main Function Encrypted token: ", encrypted_token)
+  -- ngx.log(ngx.ERR, "00000 Main Function Encrypted token: ", encrypted_token)
   -- kong.log.error("Main Encrypted token: ", encrypted_token)
 	-- check if we are authenticated already
 	if encrypted_token then
 	    local access_token = decode_token(encrypted_token, conf)
-      ngx.log(ngx.ERR, "000000 Main Function Access Token: ", access_token)
+      -- ngx.log(ngx.ERR, "000000 Main Function Access Token: ", access_token)
       -- kong.log.error("Main Access Token: ", access_token)
 	    if not access_token then
 		-- broken access token
@@ -270,7 +270,7 @@ function _M.run(conf)
 	    end
 
 	else
-    ngx.log(ngx.ERR, "00000 Main Function redirect to callback: ", callback_url)
+    -- ngx.log(ngx.ERR, "00000 Main Function redirect to callback: ", callback_url)
     return redirect_to_auth(conf, callback_url)
 	end
 end
